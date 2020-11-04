@@ -61,22 +61,20 @@ def stations():
 @app.route("/api/v1.0/precipitation")
 def precipitation():
     prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
-    precipitation = session.query(Measurement.date, Measurement.prcp, Measurement.station).\
-                        filter(Measurement.date >= prev_year).order_by(Measurement.date).all()
-    precipData = []
-    for precip in precipitation:
-        precipDict = {precip.date: precip.prcp, "Station": precip.station}
-        precipData.append(precipDict)
-    return jsonify(precipData)
+    precipitation = session.query(Measurement.date, Measurement.prcp).\
+        filter(Measurement.date >= prev_year).all()
+    precip = {date: prcp for date, prcp in precipitation}
+    return jsonify(precip)
 
 # Define the observations route.
 @app.route("/api/v1.0/tobs")
-def temp_monthly():
+def tobs():
     prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
     results = session.query(Measurement.date, Measurement.tobs).\
-                    filter(Measurement.station == 'USC00519281').\
-                    filter(Measurement.date >= prev_year).order_by(Measurement.date).all()
-    temps = list(np.ravel(results))
+        filter(Measurement.station == 'USC00519281').\
+        filter(Measurement.date >= prev_year).all()
+    # temps = list(np.ravel(results))
+    temps = {date: temp for date, temp in results}
     return jsonify(temps)
 
 # Define the statistics route.
@@ -88,9 +86,16 @@ def stats(start=None, end=None):
 
     if not end:
         results = session.query(*sel).\
-            filter(Measurement.date <= start).all()
-        temps = list(np.ravel(results))
+            filter(Measurement.date >= start).all()
+        #temps = list(np.ravel(results))
         temps=[]
+        for result in results:
+            date_dict = {}
+            date_dict["Date"] = f'{start} to 2017-08-23'
+            date_dict["Low Temp"] = result[1]
+            date_dict["Avg Temp"] = result[2]
+            date_dict["High Temp"] = result[3]
+            temps.append(date_dict)
         return jsonify(temps)
 
     results = session.query(*sel).\
@@ -100,7 +105,7 @@ def stats(start=None, end=None):
     temps=[]
     for result in results:
         date_dict = {}
-        date_dict["Date"] = f'{start}-{end}'
+        date_dict["Date"] = f'{start} to {end}'
         date_dict["Low Temp"] = result[1]
         date_dict["Avg Temp"] = result[2]
         date_dict["High Temp"] = result[3]
