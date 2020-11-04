@@ -8,17 +8,20 @@ This project is to analyze weather data in Oahu, Hawaii from an SQLite database 
  - Most active stations.
  - Low, High and Average temperatures for the most active station.
  - Histogram of temperature observations for the most active station.
- - Temperature data for June in Oahu.
- - Temperature data for December in Oahu.
+ - Low, High and Average temperatures for given date ranges.
+ 
+The investors also want to know if the shop would be sustainable year-round and have requested the following data:
+ - Temperature stats for June in Oahu.
+ - Temperature stats for December in Oahu.
  
 ## Resources
 Data: hawaii.sqlite<br/>
 Software: Python 3.8, Jupyter Notebook (anaconda3), VS Code, Flask
 
 ## Analysis
-The analysis was completed in four major steps which are outlined below.
+The analysis was completed in three main steps which are outlined below.
 
-1. **Prepare the Python toolkit** - The first step in completing the analysis was to set up the tools, connect to the SQLite database and then create a session to link between Python and the database.  This was done by first importing the dependencies required for the analysis.
+1. ***Prepare the Python toolkit*** - The first step in completing the analysis was to set up the tools, connect to the SQLite database and then create a session to link between Python and the database.  This was done by first importing the dependencies required for the analysis.
    ```py
    # Import dependencies
    from matplotlib import style
@@ -47,7 +50,7 @@ The analysis was completed in four major steps which are outlined below.
    Base.prepare(engine, reflect=True)
    ```
    The database was then scanned to find all of the available classes and each class was saved as a reference.  
-   ```
+   ```py
    # We can view all of the classes that automap found
    Base.classes.keys()
 
@@ -99,7 +102,7 @@ The analysis was completed in four major steps which are outlined below.
    ```
    ![active_stations](Results/active_stations.png)
    
-   The fourth deliverable was to find the lowest temperature recorded, higheste temperature recorded and the average temperature at the most active station.  This was done using the `fuc.min`, `func.max`, and `func.avg` SQLAlchemy functions.  The query was written to return the minimum, maximum and average temperature observation (tobs) from the Measurement class and filter the data for only the 'USC00419281' station, which was found to be the most active.  The results of the query below give the output [(54.0, 85.0, 71.66378066378067)] with the first number being the low, the second the high and the third the average temperature.
+   The fourth deliverable was to find the lowest temperature recorded, highest temperature recorded and the average temperature at the most active station.  This was done using the `fuc.min`, `func.max`, and `func.avg` SQLAlchemy functions.  The query was written to return the minimum, maximum and average temperature observation (tobs) from the Measurement class and filter the data for only the 'USC00419281' station, which was found to be the most active.  The results of the query below give the output [(54.0, 85.0, 71.66378066378067)] with the first number being the low, the second the high and the third the average temperature.
    ```py
    # Using the station id from the previous query, calculate the lowest temperature recorded, 
    # highest temperature recorded, and average temperature most active station?
@@ -107,6 +110,54 @@ The analysis was completed in four major steps which are outlined below.
               filter(Measurement.station == 'USC00519281').all()
    ```
    
+   The fifth deliverable was to print a histogram of all the temperatures recorded at the most active station for the past twelve months.  This was done by querying the temperature observations (tobs) from the Measurement class and filtering by the station and `prev_year` variable that was defined earlier in the first deliverable.  The results were extracted into a list using `.all()`, saved to a dataframe and then plotted into a histogram as shown below.
+   ```py
+   # Choose the station with the highest number of temperature observations.
+   # Query the last 12 months of temperature observation data for this station and plot the results as a histogram
+   results = session.query(Measurement.tobs).filter(Measurement.station == 'USC00519281').filter(Measurement.date >= prev_year).all()
+   df = pd.DataFrame(results, columns=['tobs'])
+   df.plot.hist(bins=12)
+   plt.tight_layout()
+   ```
+   ![Temps_histogram](Results/Temps_histogram)
+   
+   The sixth deliverable was to find the lowest temperature recorded, highest temperature recorded and the average temperature for any given date range.  This was done by writing a function that took in the arguments `start_date` and `end_date` and ran a query to find the necessary data.  The query used the `fuc.min`, `func.max`, and `func.avg` SQLAlchemy functions and returned the low temperature, average temperature and high temperature filtered by the start and end dates provided.  See the query script below.
+   ```py
+   # Write a function called `calc_temps` that will accept start date and end date in the format '%Y-%m-%d' 
+   # and return the minimum, average, and maximum temperatures for that range of dates
+   def calc_temps(start_date, end_date):
+       return session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs),
+           func.max(Measurement.tobs)).filter(Measurement.date >= start_date).filter(Measurement.date <= end_date).all()
+   print(calc_temps('2017-06-01', '2017-06-30'))
+   ```
+   
+3. **Explore year-round sustainability** - The third and final step of the analysis was to explore temperature data for the months of June and December in Oahu to determine if the surf and ice cream shop business chould be sustainable year-round.  To find the June temperatures, a query was written to return the date and temperature observations (tobs) data from the Measurement class.  The month value of the date data was then extracted from the full date and the data returned from the query was filtered to only the dates with month equal to 6.  The data was then extracted to a list using `.all()`, saved into a Pandas DataFrame with the index set to the date column, and sorted by the index.  To display the temperature statistics for the month of June, `df.describe()` was used.  See the June query below.
+   ```py
+   # Write a query that filters the Measurement table to retrieve the temperatures for the month of June.
+   June_temps = session.query(Measurement.date, Measurement.tobs).filter(extract('month', Measurement.date)==6).all()
+     
+   # Create a DataFrame from the list of temperatures for the month of June. 
+   df = pd.DataFrame(June_temps, columns=['date', 'temperature'])
+   df.set_index(df['date'], inplace=True)
+   df = df.sort_index()
+   
+   # Calculate and print out the summary statistics for the June temperature DataFrame.
+   df.describe()
+   ```
+   
+   The query was then written again in the exact same way, but instead of setting the month equal to 6, the data was filtered to only the dates with month equal to 12.  See the December query below.
+   ```py
+   # Write a query that filters the Measurement table to retrieve the temperatures for the month of December.
+   December_temps = session.query(Measurement.date, Measurement.tobs).filter(extract('month', Measurement.date)==12).all()
+     
+   # Create a DataFrame from the list of temperatures for the month of December. 
+   df = pd.DataFrame(December_temps, columns=['date', 'temperature'])
+   df.set_index(df['date'], inplace=True)
+   df = df.sort_index()
+   
+   # Calculate and print out the summary statistics for the Decemeber temperature DataFrame.
+   df.describe()
+   ```   
    
 ## Results
 The June and December temperature query results are shown below along with an explanation of three key differentces between the data for each month.
