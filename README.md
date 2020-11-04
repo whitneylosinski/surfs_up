@@ -59,6 +59,10 @@ The analysis was completed in three main steps which are outlined below.
    Station = Base.classes.station
    ```
    The final step of before looking at the data was to create a session link from Python to the database.
+   ```py
+   # Create our session (link) from Python to the DB
+   session = Session(engine)
+   ```
    
 2. ***Exploring the data*** - With the toolkit set up, the tables loaded and the database connected to Python, the data could now be queried to find the required deliverables.  The first deliverable was to find the total precipititation for each day for the latest year.  To do this, the variable `prev_year` was set to the last date in the database minus 365 days.  The data was then queried to see the date and precipication data from the Measurement class, filtered by only the dates greater than or equal to the `prev_year` variable.  Adding `.all()` to the query, extracted the results and put them into a list.  The list was then saved to a dataframe with the index set to the `'date'` column.  The dataframe was sorted by the index, putting the list in chronological order, the data was plotted using Matplotlib and then the statistics were shown using `df.describe()`.  See the code and the resulting plot and statistics below.
    ```py
