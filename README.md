@@ -64,7 +64,7 @@ The analysis was completed in three main steps which are outlined below.
    session = Session(engine)
    ```
    
-2. ***Exploring the data*** - With the toolkit set up, the tables loaded and the database connected to Python, the data could now be queried to find the required deliverables.  The first deliverable was to find the total precipititation for each day for the latest year.  To do this, the variable `prev_year` was set to the last date in the database minus 365 days.  The data was then queried to see the date and precipication data from the Measurement class, filtered by only the dates greater than or equal to the `prev_year` variable.  Adding `.all()` to the query, extracted the results and put them into a list.  The list was then saved to a dataframe with the index set to the `'date'` column.  The dataframe was sorted by the index, putting the list in chronological order, the data was plotted using Matplotlib and then the statistics were shown using `df.describe()`.  See the code and the resulting plot and statistics below.
+2. ***Exploring the data*** - With the toolkit set up, the tables loaded and the database connected to Python, the data could now be queried to find the required deliverables.  The first deliverable was to find the total precipititation for each day for the latest year.  To do this, the variable `prev_year` was set to the last date in the database minus 365 days.  The data was then queried to see the date and precipitation data from the Measurement class, filtered by only the dates greater than or equal to the `prev_year` variable.  Adding `.all()` to the query, extracted the results and put them into a list.  The list was then saved to a dataframe with the index set to the `'date'` column.  The dataframe was sorted by the index, putting the list in chronological order.  The data was plotted using Matplotlib and then the statistics were shown using `df.describe()`.  See the code and the resulting plot and statistics below.
    ```py
    # Design a query to retrieve the last 12 months of precipitation data and plot the results. 
    #Starting from the last data point in the database. 
@@ -97,7 +97,7 @@ The analysis was completed in three main steps which are outlined below.
    session.query(func.count(Station.station)).all()
    ```
    
-   The third deliverable was to detemine which station was the most active.  This was done by writing a query to look at the Measurement class for the station and return both the station and the count of each time the station was listed.  The query was then grouped each station and ordered in descending order by the count and each data was extracted to a list using `.all()`.  The query and results are shown below.
+   The third deliverable was to detemine which station was the most active.  This was done by writing a query to look at the Measurement class for the station and return both the station and the count of each time the station recorded data.  The query was then grouped by each station and ordered in descending order by the count.  The data was extracted to a list using `.all()`.  The query and results are shown below.
    ```py  
    # What are the most active stations?
    # List the stations and the counts in descending order.
@@ -106,7 +106,7 @@ The analysis was completed in three main steps which are outlined below.
    ```
    ![active_stations](Results/active_stations.png)
    
-   The fourth deliverable was to find the lowest temperature recorded, highest temperature recorded and the average temperature at the most active station.  This was done using the `fuc.min`, `func.max`, and `func.avg` SQLAlchemy functions.  The query was written to return the minimum, maximum and average temperature observation (tobs) from the Measurement class and filter the data for only the 'USC00419281' station, which was found to be the most active.  The results of the query below give the output [(54.0, 85.0, 71.66378066378067)] with the first number being the low, the second the high and the third the average temperature.
+   The fourth deliverable was to find the lowest temperature recorded, highest temperature recorded and the average temperature at the most active station.  This was done using the `func.min`, `func.max`, and `func.avg` SQLAlchemy functions.  The query was written to return the minimum, maximum and average temperature observation (tobs) from the Measurement class and filter the data for only the 'USC00419281' station, which was found to be the most active.  The results of the query below give the output [(54.0, 85.0, 71.66378066378067)] with the first number being the low, the second the high and the third the average temperature.
    ```py
    # Using the station id from the previous query, calculate the lowest temperature recorded, 
    # highest temperature recorded, and average temperature most active station?
@@ -114,7 +114,7 @@ The analysis was completed in three main steps which are outlined below.
               filter(Measurement.station == 'USC00519281').all()
    ```
    
-   The fifth deliverable was to print a histogram of all the temperatures recorded at the most active station for the past twelve months.  This was done by querying the temperature observations (tobs) from the Measurement class and filtering by the station and `prev_year` variable that was defined earlier in the first deliverable.  The results were extracted into a list using `.all()`, saved to a dataframe and then plotted into a histogram as shown below.
+   The fifth deliverable was to print a histogram of all the temperatures recorded at the most active station for the past twelve months.  This was done by querying the temperature observations (tobs) from the Measurement class and filtering by the station and `prev_year` variable that was defined earlier in the first deliverable.  The results were extracted into a list using `.all()`, saved to a Pandas DateFrame and then plotted into a histogram as shown below.
    ```py
    # Choose the station with the highest number of temperature observations.
    # Query the last 12 months of temperature observation data for this station and plot the results as a histogram
@@ -125,7 +125,7 @@ The analysis was completed in three main steps which are outlined below.
    ```
    ![Temps_histogram](Results/Temps_histogram)
    
-   The sixth deliverable was to find the lowest temperature recorded, highest temperature recorded and the average temperature for any given date range.  This was done by writing a function that took in the arguments `start_date` and `end_date` and ran a query to find the necessary data.  The query used the `fuc.min`, `func.max`, and `func.avg` SQLAlchemy functions and returned the low temperature, average temperature and high temperature filtered by the start and end dates provided.  See the query script below.
+   The sixth deliverable was to find the lowest temperature recorded, highest temperature recorded and the average temperature for any given date range.  This was done by writing a function that took in the arguments `start_date` and `end_date` and ran a query to find the necessary data.  The query used the `func.min`, `func.max`, and `func.avg` SQLAlchemy functions and returned the low temperature, average temperature and high temperature filtered by the start and end dates provided.  See the query script below.
    ```py
    # Write a function called `calc_temps` that will accept start date and end date in the format '%Y-%m-%d' 
    # and return the minimum, average, and maximum temperatures for that range of dates
@@ -164,7 +164,7 @@ The analysis was completed in three main steps which are outlined below.
    ```   
    
 ## Results
-The June and December temperature query results are shown below along with an explanation of three key differentces between the data for each month.
+The June and December temperature query results are shown below along with an explanation of three key differences between the data for each month.
 
    | June Temperatures | December Temperatures |
    |:--:|:--:|
@@ -174,10 +174,10 @@ The June and December temperature query results are shown below along with an ex
  
  2. **High Temperature** - The high temperature in June (85°F) is 2° warmer than the high temperature in December (83°F).  The similarity in these values suggests that the weather doesn't change significantly in Oahu between June and December.  Again, based on the high temperatures, it appears the shop could be sustainable year-round.
  
- 3. **Low Temperature** - The low temperature in June (64°F) is 8° warmer that the low temperature in December (56°F).  The low temperatures for December may be enough to deter customers from surfing or eating ice cream, but again, a second study would need to be done to determine the ideal surfing and ice cream eating temperatures for customers.  Also, although the low temperatures could be a cause for concern, the average temperature for December suggests that cold days below 60°F are rare.
+ 3. **Low Temperature** - The low temperature in June (64°F) is 8° warmer that the low temperature in December (56°F).  The low temperatures for December may be enough to deter customers from surfing or eating ice cream, but again, a second study would need to be done to determine the ideal surfing and ice cream eating temperatures for customers.  Also, although the low temperatures could be a cause for concern, the average temperature for December suggests that cold days below 60°F are less common.
 
 ## Summary
-The results of the analysis show that Surf's Up! surf and ice cream shop could be a sustainable year-round business in Oahu in regards to temperature.  The data shows that Oahu in June has an average temperature of 75°F with a high of 85°F and a low of 64°F.  The temperature in December is slightly cooler with an average of 71°F, a high of 83°F and a low of 56°F.  Although the low for December is quite a bit colder than June, the average December temperature is only 4° cooler and still likely to be within ideal surfing and ice cream eating temperatures for customers.
+The results of the analysis show that Surf's Up! surf and ice cream shop could be a sustainable year-round business in Oahu in regards to temperature.  Although the low for December is quite a bit colder than June, the average December temperature is only 4° cooler and still likely to be within ideal surfing and ice cream eating temperatures for customers.
 
 To look a bit deeper into the sustainability of the shop year-round, a study could be done asking customers what temperatures they prefer for surfing and eating ice cream.  It would also be smart to compare the precipitation in June versus that in December.  Since people don't typically surf or eat ice cream as much if it's raining, precipitation could play an important part in the success of the shop as well.  The two additional queries for the low, high and average precipitation in June and the low, high and average precipitation in December are shown below.  
 
@@ -185,4 +185,4 @@ To look a bit deeper into the sustainability of the shop year-round, a study cou
    |:--:|:--:|
    |![June_precip](Results/June_precip.png)|![December_precip](Results/December_precip.png)|
 
-The tables show that the average precipitation is slightly higher in December (0.22") than in June (0.14") and that December had a higher maximum precipitation (6.42") than the max in June (4.43").  The additional rainfall may have a negative effect on sales and year-round sustainability.  Another query to better understand the rain patterns would be to look at how many days out of the each month had precipitation.  This could provide valuable information for how often sales could be impacted by rain.
+The tables show that the average precipitation is slightly higher in December (0.22") than in June (0.14") and that December had a higher maximum precipitation (6.42") than the max in June (4.43").  The additional rainfall may have a negative effect on sales and year-round sustainability.  Another query to better understand the rain patterns would be to look at how many days out of each month had precipitation.  This could provide valuable information for how often sales could be impacted by rain.
