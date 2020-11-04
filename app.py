@@ -53,7 +53,7 @@ def welcome():
 # Define the stations route.
 @app.route("/api/v1.0/stations")
 def stations():
-    results = session.query(Station.name, Station.station).all()
+    results = session.query(Station.station).all()
     stations = list(np.ravel(results))
     return jsonify(stations)
 
@@ -88,31 +88,24 @@ def stats(start=None, end=None):
 
     if not end:
         results = session.query(*sel).\
-                        filter(Measurement.date >= start).group_by(Measurement.date).all()
-        #temps = list(np.ravel(results))
+            filter(Measurement.date <= start).all()
+        temps = list(np.ravel(results))
         temps=[]
-        for result in results:
-            date_dict = {}
-            date_dict["Date"] = result[0]
-            date_dict["Low Temp"] = result[1]
-            date_dict["Avg Temp"] = result[2]
-            date_dict["High Temp"] = result[3]
-            temps.append(date_dict)
         return jsonify(temps)
 
-        
-    
     results = session.query(*sel).\
-                    filter(Measurement.date >= start).\
-                    filter(Measurement.date <= end).group_by(Measurement.date).all()
+        filter(Measurement.date >= start).\
+        filter(Measurement.date <= end).all()
     #temps = list(np.ravel(results))
     temps=[]
     for result in results:
         date_dict = {}
-        date_dict["Date"] = result[0]
+        date_dict["Date"] = f'{start}-{end}'
         date_dict["Low Temp"] = result[1]
         date_dict["Avg Temp"] = result[2]
         date_dict["High Temp"] = result[3]
         temps.append(date_dict)
     return jsonify(temps)
 
+if __name__ == "__main__":
+    app.run(debug=True)
