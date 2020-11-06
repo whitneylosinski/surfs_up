@@ -86,6 +86,7 @@ The analysis was completed in three main steps which are outlined below.
 
    # Use Pandas Plotting with Matplotlib to plot the data
    df.plot(title='Total Precitpitation per Day')
+   plt.xticks(rotation=90)
    ```
    | Precipitation Plot | Precipitation Stats |
    |:--:|:--:|
@@ -121,9 +122,10 @@ The analysis was completed in three main steps which are outlined below.
    results = session.query(Measurement.tobs).filter(Measurement.station == 'USC00519281').filter(Measurement.date >= prev_year).all()
    df = pd.DataFrame(results, columns=['tobs'])
    df.plot.hist(bins=12)
+   plt.title("Temperaure observations")
    plt.tight_layout()
    ```
-   ![Temps_histogram](Results/Temps_histogram)
+   ![Temps_histogram](Results/Temps_histogram.png)
    
    The sixth deliverable was to find the lowest temperature recorded, highest temperature recorded and the average temperature for any given date range.  This was done by writing a function that took in the arguments `start_date` and `end_date` and ran a query to find the necessary data.  The query used the `func.min`, `func.max`, and `func.avg` SQLAlchemy functions and returned the low temperature, average temperature and high temperature filtered by the start and end dates provided.  See the query script below.
    ```py
